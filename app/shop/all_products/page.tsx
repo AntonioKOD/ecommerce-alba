@@ -47,7 +47,7 @@ export default function AllProducts(){
         body: JSON.stringify({clerkId, productId, quantity})
       })
       if(response.ok){
-        const data = await response.json();
+        await response.json();
         console.log("Product added to cart")
       }
     }catch(error){

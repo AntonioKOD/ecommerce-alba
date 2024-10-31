@@ -2,16 +2,9 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Featured from "./components/Featured";
-import {useUser} from '@clerk/nextjs'
-import { useState, useEffect } from "react";
 
-type Product = {
-  id: string,
-  title: string,
-  description: string,
-  price: number,
-  imageUrl: string
-}
+
+
 
 export default function Home() {
   
