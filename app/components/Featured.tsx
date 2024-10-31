@@ -50,7 +50,7 @@ export default function Featured() {
         body: JSON.stringify({clerkId, productId, quantity})
       })
       if(response.ok){
-        const data = await response.json();
+       await response.json();
         console.log("Product added to cart")
       }
     }catch(error){

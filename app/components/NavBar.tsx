@@ -12,10 +12,10 @@ import {
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { FiMenu, FiShoppingCart } from "react-icons/fi";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
-import { DialogTitle } from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 
 type Item = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   product: any;
   id: string;
   title: string;
