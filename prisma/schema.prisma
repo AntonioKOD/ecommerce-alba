@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+model Product {
+  id String @id @default(uuid())
+  title String
+  description String
+  price Float
+  stock Int
+  imageUrl String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cartItems CartItem[]
+  orderItems OrderItem[]
+}
+
+model Order {
+  id String @id @default(uuid())
+  clerkId String                     // Clerk's user ID to link orders with users
+  status OrderStatus
+  totalAmount Float
+  orderItems OrderItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
+  id String @id @default(uuid())
+  clerkId String                     // Clerk's user ID to link cart items with users
+  product Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity Int
+  createdAt DateTime @default(now())
+}
+
+model OrderItem {
+  id String @id @default(uuid())
+  order Order @relation(fields: [orderId], references: [id])
+  orderId String
+  product Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity Int
+  price Float
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELED
+}
