@@ -1,8 +1,6 @@
 "use client"
 import { Card, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-
 import {useUser} from '@clerk/nextjs'
 import { useState, useEffect } from "react";
 
