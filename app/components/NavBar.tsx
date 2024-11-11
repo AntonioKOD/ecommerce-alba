@@ -59,7 +59,7 @@ export default function NavBar() {
 
  loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE!);
 
-async function handleCheckout(cartItems) {
+async function handleCheckout(cartItems: Item[]) {
   try {
     console.log("Cart items being sent:", cartItems); // Log here to inspect structure
 

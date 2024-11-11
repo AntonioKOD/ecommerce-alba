@@ -6,14 +6,18 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const prisma = new PrismaClient();
 
 const host = process.env.NEXT_PUBLIC_HOST; // Use the new backend-specific variable
-
+type CartItem = {
+    id: string,
+    quantity: number, 
+    stripePriceId: string
+}
 export async function POST(req: NextRequest) {
   try {
     const { cartItems } = await req.json();
 
     const products = await prisma.cartItem.findMany({
       where: {
-        id: { in: cartItems.map((item) => item.id) },
+        id: { in: cartItems.map((item: CartItem) => item.id) },
       },
       include: {
         product: {

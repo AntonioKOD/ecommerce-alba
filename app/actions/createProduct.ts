@@ -4,16 +4,16 @@ import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import path from 'path';
-import Stripe from 'stripe'
+import Stripe from 'stripe';
 
 const prisma = new PrismaClient();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function createProduct(formData: FormData) {
   const title = formData.get('title');
   const description = formData.get('description');
-  const price = parseFloat(formData.get('price'));
-  const stock = parseInt(formData.get('stock'), 10);
+  const price = parseFloat(formData.get('price') as string);
+  const stock = parseInt(formData.get('stock') as string, 10);
   const image = formData.get('image');
 
   // Validate form data
@@ -24,10 +24,10 @@ export async function createProduct(formData: FormData) {
     isNaN(stock) ||
     !(image instanceof File)
   ) {
-    throw new Error('Invalid form data');
+    throw new Error('Invalid form data. Please check all fields.');
   }
 
-  // Generate a unique filename
+  // Generate a unique filename for the image
   const imageName = `${uuidv4()}-${image.name}`;
   const imagePath = path.join(process.cwd(), 'public', 'uploads', imageName);
 
@@ -38,30 +38,36 @@ export async function createProduct(formData: FormData) {
   const arrayBuffer = await image.arrayBuffer();
   await fs.writeFile(imagePath, Buffer.from(arrayBuffer));
 
-  const stripeProduct = await stripe.products.create({
-    name: title,
-    description: description,
-  })
+  try {
+    // Create product in Stripe
+    const stripeProduct = await stripe.products.create({
+      name: title,
+      description: description,
+    });
 
-  const stripePrice = await stripe.prices.create({
-    unit_amount: price * 100,
-    currency: 'usd',
-    product: stripeProduct.id
-  })
-  // Create the product in the database
-  const product = await prisma.product.create({
-    data: {
-      title,
-      description,
-      price,
-      stock,
-      imageUrl: `/uploads/${imageName}`,
-      stripeProductId: stripeProduct.id,
-      stripePriceId: stripePrice.id
-    },
-  });
+    // Create price in Stripe
+    const stripePrice = await stripe.prices.create({
+      unit_amount: Math.round(price * 100), // Convert to cents
+      currency: 'usd',
+      product: stripeProduct.id,
+    });
 
-  return product;
+    // Create the product in the database
+    const product = await prisma.product.create({
+      data: {
+        title,
+        description,
+        price,
+        stock,
+        imageUrl: `/uploads/${imageName}`,
+        stripeProductId: stripeProduct.id,
+        stripePriceId: stripePrice.id,
+      },
+    });
+
+    return product;
+  } catch (error) {
+    console.error('Error creating product:', error);
+    throw new Error('Failed to create product. Please try again later.');
+  }
 }
-
-
