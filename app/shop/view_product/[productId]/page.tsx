@@ -48,7 +48,7 @@ export default function ProductDetails() {
   return (
     <div className="p-8">
       <h1 className="text-4xl font-bold mb-4">{product.title}</h1>
-      <Image src={product.imageUrl} alt={product.title} className="w-full h-64 object-cover mb-4" />
+      <Image src={product.imageUrl} alt={product.title} className="w-full h-64 object-cover mb-4" width={50} height={50}/>
       <p className="text-lg mb-4">{product.description}</p>
       <p className="text-2xl font-bold text-red-500">${product.price.toFixed(2)}</p>
     </div>

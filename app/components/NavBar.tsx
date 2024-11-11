@@ -14,25 +14,32 @@ import { FiMenu, FiShoppingCart } from "react-icons/fi";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
+import {usePathname} from "next/navigation"
+import { loadStripe } from "@stripe/stripe-js";
+
 type Item = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  product: any;
   id: string;
   title: string;
   quantity: number;
   price: number;
+  product: {price: number; title: string}
 };
 
 export default function NavBar() {
+  const pathname = usePathname()
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<Item[]>([]);
   const [quantitiesToRemove, setQuantitiesToRemove] = useState<{ [key: string]: number }>({});
+
 
   useEffect(() => {
     if (isCartOpen) {
       viewCart();
     }
   }, [isCartOpen]);
+
+  
 
   async function viewCart() {
     try {
@@ -48,6 +55,30 @@ export default function NavBar() {
       return total + item.product.price * item.quantity;
     }, 0);
   }
+
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE!);
+
+async function handleCheckout(cartItems) {
+  try {
+    console.log("Cart items being sent:", cartItems); // Log here to inspect structure
+
+    const response = await fetch("/routes/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cartItems }), // Ensure no circular data here
+    });
+
+    const { url } = await response.json();
+    if (url) {
+      window.location.href = url;
+    } else {
+      console.error("Missing session URL.");
+    }
+  } catch (err) {
+    console.error("Checkout error:", err);
+  }
+}
 
   // Function to delete an item from the cart
   async function deleteFromCart(id: string, quantityToRemove: number) {
@@ -84,6 +115,9 @@ export default function NavBar() {
       ...prev,
       [id]: value,
     }));
+  }
+  if(pathname.includes('/dashboard')){
+    return <></>
   }
 
   return (
@@ -162,8 +196,8 @@ export default function NavBar() {
                 Total: ${getTotalPrice().toFixed(2)}
               </div>
     <div className="mt-6 flex justify-end">
-      <Button className="px-6 py-2 bg-amber-500 text-black font-semibold rounded-md hover:bg-amber-600 transition duration-200">
-        <Link href='/checkout'>Checkout</Link>
+      <Button onClick={() => handleCheckout(cartItems)}className="px-6 py-2 bg-amber-500 text-black font-semibold rounded-md hover:bg-amber-600 transition duration-200">
+        Checkout
       </Button>
     </div>
   </DialogContent>
