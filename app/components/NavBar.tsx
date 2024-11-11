@@ -57,7 +57,7 @@ export default function NavBar() {
   }
 
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE!);
+ loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE!);
 
 async function handleCheckout(cartItems) {
   try {
