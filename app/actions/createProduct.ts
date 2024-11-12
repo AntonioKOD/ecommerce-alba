@@ -28,7 +28,7 @@ export async function createProduct(formData: FormData) {
 
   // Generate a unique filename for the image
   const imageName = `${uuidv4()}-${image.name}`;
-  const imagePath = path.join('/tmp', imageName);
+  path.join('/tmp', imageName);
 
   // Ensure the uploads directory exists
   //await fs.mkdir(path.dirname(imagePath), { recursive: true });
