@@ -2,7 +2,6 @@
 
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import { promises as fs } from 'fs';
 import path from 'path';
 import Stripe from 'stripe';
 
@@ -29,14 +28,14 @@ export async function createProduct(formData: FormData) {
 
   // Generate a unique filename for the image
   const imageName = `${uuidv4()}-${image.name}`;
-  const imagePath = path.join(process.cwd(), 'public', 'uploads', imageName);
+  const imagePath = path.join('/tmp', imageName);
 
   // Ensure the uploads directory exists
-  await fs.mkdir(path.dirname(imagePath), { recursive: true });
+  //await fs.mkdir(path.dirname(imagePath), { recursive: true });
 
   // Save the image to the uploads directory
-  const arrayBuffer = await image.arrayBuffer();
-  await fs.writeFile(imagePath, Buffer.from(arrayBuffer));
+  //const arrayBuffer = await image.arrayBuffer();
+  //await fs.writeFile(imagePath, Buffer.from(arrayBuffer));
 
   try {
     // Create product in Stripe
@@ -59,7 +58,7 @@ export async function createProduct(formData: FormData) {
         description,
         price,
         stock,
-        imageUrl: `/uploads/${imageName}`,
+        imageUrl: `/routes/images?name=${imageName}`,
         stripeProductId: stripeProduct.id,
         stripePriceId: stripePrice.id,
       },
