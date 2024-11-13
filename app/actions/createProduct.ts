@@ -2,12 +2,25 @@
 
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import { promises as fs } from 'fs';
-import path from 'path';
 import Stripe from 'stripe';
+import cloudinary, { UploadApiResponse } from 'cloudinary'; // Import UploadApiResponse type
+import { Readable } from 'stream';
+
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const prisma = new PrismaClient();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+function bufferToStream(buffer: Buffer) {
+  const stream = new Readable();
+  stream.push(buffer);
+  stream.push(null);
+  return stream;
+}
 
 export async function createProduct(formData: FormData) {
   const title = formData.get('title');
@@ -27,22 +40,31 @@ export async function createProduct(formData: FormData) {
     throw new Error('Invalid form data. Please check all fields.');
   }
 
-  // Generate a unique filename for the image
-  const imageName = `${uuidv4()}-${image.name}`;
-  const imagePath = path.join(process.cwd(), 'public', 'uploads', imageName);
-
-  // Ensure the uploads directory exists
-  await fs.mkdir(path.dirname(imagePath), { recursive: true });
-
-  // Save the image to the uploads directory
   const arrayBuffer = await image.arrayBuffer();
-  await fs.writeFile(imagePath, Buffer.from(arrayBuffer));
+  const buffer = Buffer.from(arrayBuffer);
+
+  let uploadedImage: UploadApiResponse; // Explicitly type the uploadedImage
+  try {
+    uploadedImage = await new Promise<UploadApiResponse>((resolve, reject) => {
+      const uploadStream = cloudinary.v2.uploader.upload_stream(
+        { folder: 'nextjs-products', public_id: uuidv4() },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result as UploadApiResponse); // Explicitly cast result
+        }
+      );
+      bufferToStream(buffer).pipe(uploadStream);
+    });
+  } catch (error) {
+    console.error('Error uploading image to Cloudinary:', error);
+    throw new Error('Failed to upload image. Please try again later.');
+  }
 
   try {
     // Create product in Stripe
     const stripeProduct = await stripe.products.create({
       name: title,
-      description: description,
+      description,
     });
 
     // Create price in Stripe
@@ -51,7 +73,6 @@ export async function createProduct(formData: FormData) {
       currency: 'usd',
       product: stripeProduct.id,
     });
-
     // Create the product in the database
     const product = await prisma.product.create({
       data: {
@@ -59,12 +80,12 @@ export async function createProduct(formData: FormData) {
         description,
         price,
         stock,
-        imageUrl: `/uploads/${imageName}`,
+        imageUrl: uploadedImage.secure_url, // Now TypeScript knows secure_url exists
         stripeProductId: stripeProduct.id,
         stripePriceId: stripePrice.id,
       },
     });
-
+    
     return product;
   } catch (error) {
     console.error('Error creating product:', error);
