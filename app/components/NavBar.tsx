@@ -6,8 +6,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { FiMenu, FiShoppingCart } from "react-icons/fi";
@@ -218,31 +216,17 @@ async function handleCheckout(cartItems: Item[]) {
               <DropdownMenuTrigger className="text-2xl text-white">
                 <FiMenu />
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-40 bg-black border border-amber-500">
-                <DropdownMenuItem className="hover:bg-amber-500 hover:text-black transition duration-200">
-                  Home
+              <DropdownMenuContent className="w-40 bg-white border border-amber-500">
+                <DropdownMenuItem className="hover:bg-amber-500  transition duration-200">
+                  <Link href='/'>Home</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="hover:bg-amber-500 hover:text-black transition duration-200">
-                  Recipes
+                <DropdownMenuItem className="hover:bg-amber-500 transition duration-200">
+                  <Link href='/recipes'>Recipes</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="hover:bg-amber-500 hover:text-black transition duration-200">
-                  About Us
+                <DropdownMenuItem className="hover:bg-amber-500 transition duration-200">
+                  <Link href='/about'>About Us</Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-amber-500 font-semibold">Shop</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="hover:bg-amber-500 hover:text-black transition duration-200">
-                  All Products
-                </DropdownMenuItem>
-                <DropdownMenuItem className="hover:bg-amber-500 hover:text-black transition duration-200">
-                  Kitchen Essentials
-                </DropdownMenuItem>
-                <DropdownMenuItem className="hover:bg-amber-500 hover:text-black transition duration-200">
-                  Apparel
-                </DropdownMenuItem>
-                <DropdownMenuItem className="hover:bg-amber-500 hover:text-black transition duration-200">
-                  Gift Sets & Bundles
-                </DropdownMenuItem>
+              <Link href='/shop/all_products'><DropdownMenuItem className="hover:bg-amber-500 transition duration-200">Shop</DropdownMenuItem></Link>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
